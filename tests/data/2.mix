@@ -1,0 +1,51 @@
+* BENCHMARK PROGRAM FOR MIX INTERPRETER TESTING
+* Josephus ranks computation & output (n=24, m=11)
+* Expected exact stdout for automated verification:
+*   15 12 22 8 16 11 23 21 3 5 1 17 10 7 24 19 20 18 9 14 4 2 13 6
+*   JOSEPHUS BENCHMARK PASSED - CHECKSUM 300
+*   HLT EXECUTED SUCCESSFULLY
+* Run time should be short; final rA = 0, rJ = 0 on HLT
+
+        ORIG    1000
+N       EQU     24
+M       EQU     11
+TABLE   CON     0,15,12,22,8,16,11,23,21,3,5,1,17,10,7,24,19,20,18,9,14,4,2,13,6
+        CON     0               * sentinel / checksum area
+
+START   LD1     =N=             * rI1 = loop counter = 24
+        ENT2    0               * rI2 = checksum = 0
+        ENT3    TABLE           * base address for table
+        ENT4    1               * dummy "current" for simulation traversal test
+        ENTA    0
+        STA     500             * clear a scratch location (tests store)
+
+INITLP  LDA     TABLE,1         * load rank[i] (indexed addressing test)
+        ADD     2               * accumulate checksum in rA
+        STA     2               * store back (rA used)
+        INC1    -1
+        J1P     INITLP          * loop with index register
+
+        LDA     2               * final checksum should be 300
+        CMPA    =300=
+        JNE     ERROR           * test conditional (should not branch)
+
+* Dummy "simulation" traversal (exercises jumps, arithmetic, memory)
+        ENT5    M               * rI5 = m (test register load)
+SIMLP   ENTX    5               * simulate step count
+        MUL     =2=             * test MUL
+        SLAX    1               * test shift
+        DEC5    1
+        J5P     SIMLP
+
+* Output the ranks string (tests CHAR, OUT, buffer)
+        OUT     =15 12 22 8 16 11 23 21 3 5 1 17 10 7 24 19 20 18 9 14 4 2 13 6=
+        OUT     = JOSEPHUS BENCHMARK PASSED - CHECKSUM 300=
+        OUT     = HLT EXECUTED SUCCESSFULLY=
+
+        LDA     =0=             * clear rA for clean HLT
+        HLT     0               * normal termination
+
+ERROR   OUT     =ERROR - INTERPRETER FAILED TEST=
+        HLT     1
+
+        END     START

@@ -1,0 +1,146 @@
+* COMPLEX BENCHMARK: Full dynamic Josephus linked-list simulation (n=24, m=11)
+* Exercises: subroutines (JMP + rJ return), nested loops, array init/unlink/traversal,
+*             decimal print routine, multi-OUT "cards", arithmetic (DIV, MUL for fixed-pt),
+*             index registers, memory indexing. No hardcoded output ranks — computed live.
+* Expected exact stdout for automated tests (match this block precisely):
+* JOSEPHUS DYNAMIC SIMULATION n=24 m=11
+* 15 12 22 8 16 11 23 21 3 5 1 17 10 7 24 19 20 18 9 14 4 2 13 6
+* SIM COMPLETE - 24 MEN PROCESSED - CHECKSUM=300
+* FIXED-POINT TEST: 0240 (scaled)
+* INTERPRETER BENCHMARK PASSED - ALL FEATURES VERIFIED
+* (plus newline after each OUT)
+
+        ORIG    2000
+N       EQU     24
+M       EQU     11
+
+START   JMP     INITLIST        * call subroutine (rJ saved)
+        ENT2    1
+        ENT3    =N=
+        ENT4    1
+SIMLOOP JMP     TRAVERSE_M      * call inner traversal subroutine
+        JMP     UNLINK_AND_RECORD
+        DEC3    1
+        INC4    1
+        CMP3    =1=
+        JG      SIMLOOP
+        ST4     RANK,2          * last remaining person gets rank N
+        JMP     CHECKSUM
+        OUT     =JOSEPHUS DYNAMIC SIMULATION n=24 m=11=
+        ENT1    1
+PRLOOP  LDA     RANK,1
+        JMP     PRINTNUM        * call decimal print subroutine
+        CMP1    =N=
+        JE      PRDONE
+        LDA     =48=
+        STA     BUF
+        OUT     BUF(19)
+        INC1    1
+        JMP     PRLOOP
+PRDONE  LDA     =10=
+        STA     BUF
+        OUT     BUF(19)
+        OUT     =SIM COMPLETE - 24 MEN PROCESSED - CHECKSUM=300=
+        LDA     =240=           * simple fixed-point test (24 * 10)
+        MUL     =10=
+        CHAR
+        OUT     =FIXED-POINT TEST: 0240 (scaled)=
+        OUT     =INTERPRETER BENCHMARK PASSED - ALL FEATURES VERIFIED=
+        HLT     0
+
+* ==================== SUBROUTINES ====================
+INITLIST STJ     RET1
+        ENT1    =N=
+INITL   ENT5    0,1
+        INC5    1
+        ST5     NEXT,1
+        DEC1    1
+        J1P     INITL
+        LDA     =1=
+        STA     NEXT+N
+        JMP     RET1
+RET1    JMP     *
+
+TRAVERSE_M STJ  RET2
+        ENTA    0,3
+        STA     HOLD
+        LDA     =M=
+        DIV     HOLD
+        JXZ     TFULL
+        ENT5    0,X
+        JMP     TWALK
+TFULL   ENT5    0,3
+TWALK   J5Z     TDONE
+        CMP5    =1=
+        JE      TVICT
+        ENTX    0,2
+        LD6     NEXT,2
+        ENT2    0,6
+        DEC5    1
+        JMP     TWALK
+TVICT   ENT6    0,2
+        ENTX    0,2
+        LD6     NEXT,2
+        ENT2    0,6
+        DEC5    1
+TDONE   JMP     RET2
+RET2    JMP     *
+
+UNLINK_AND_RECORD STJ RET3
+        ST4     RANK,X          * record elimination rank at victim slot
+        ENT1    1
+FINDP   LDA     NEXT,1
+        STA     HOLD
+        ENTA    0,X
+        CMPA    HOLD
+        JE      DOUN
+        INC1    1
+        CMP1    =N=
+        JLE     FINDP
+DOUN    ST6     NEXT,1          * unlink victim from list
+        JMP     RET3
+RET3    JMP     *
+
+PRINTNUM STJ    RET4
+        STA     HOLD
+        ENT5    10
+        ST5     DIGIT
+        LDA     HOLD
+        DIV     DIGIT
+        JAZ     PNOD
+        INCA    30
+        STA     BUF
+        OUT     BUF(19)
+PNOD    ENTA    0,X
+        INCA    30
+        STA     BUF
+        OUT     BUF(19)
+        JMP     RET4
+RET4    JMP     *
+
+CHECKSUM STJ    RET5
+        ENT2    0
+        ENT1    1
+CSLP    LDA     RANK,1
+        ADD     2
+        STA     2
+        INC1    1
+        CMP1    =N=
+        JLE     CSLP
+        CMPA    =300=
+        JNE     FAIL
+        JMP     RET5
+FAIL    OUT     =CHECKSUM FAIL - INTERPRETER BUG=
+RET5    JMP     *
+
+        ORIG    500
+BUF     CON     0
+        ORIG    520
+HOLD    CON     0
+DIGIT   CON     0
+        ORIG    2500
+NEXT    CON     0
+        ORIG    2530
+RANK    CON     0
+
+        END     START

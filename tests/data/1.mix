@@ -1,0 +1,92 @@
+* JOSEPHUS - TAOCP Vol.1 Ex. 1.3.2-22
+* Prints execution ranks for n=24, m=11
+
+N       EQU     24
+M       EQU     11
+
+        ORIG    100
+START   ENT1    =N=
+INIT1   ENT5    0,1
+        INC5    1
+        ST5     NEXT,1
+        DEC1    1
+        J1P     INIT1
+        LDA     =1=
+        STA     NEXT+N
+        ENT2    1
+        ENT3    =N=
+        ENT4    1
+
+LOOP    ENTA    0,3
+        STA     TEMP
+        LDA     =M=
+        DIV     TEMP
+        JXZ     FULL
+        ENT5    0,X
+        JMP     WALK
+FULL    ENT5    0,3
+WALK    J5Z     FINDP
+        CMP5    =1=
+        JE      VICT
+        ENTX    0,2
+        LD6     NEXT,2
+        ENT2    0,6
+        DEC5    1
+        JMP     WALK
+VICT    ENT6    0,2
+        ENTX    0,2
+        LD6     NEXT,2
+        ENT2    0,6
+        DEC5    1
+FINDP   ENT1    1
+SCAN    LDA     NEXT,1
+        STA     HOLD
+        ENTA    0,X
+        CMPA    HOLD
+        JE      UNLINK
+        INC1    1
+        CMP1    =N=
+        JLE     SCAN
+UNLINK  ST4     RANK,X
+        ST6     NEXT,1
+        DEC3    1
+        INC4    1
+        CMP3    =1=
+        JG      LOOP
+
+        ST4     RANK,2
+        ENT1    1
+OUTLP   LDA     RANK,1
+        STA     HOLD
+        ENT5    10
+        ST5     TEMP
+        LDA     HOLD
+        DIV     TEMP
+        JAZ     ODIG
+        INCA    30
+        STA     DIGWD
+        OUT     DIGWD(19)
+ODIG    ENTA    0,X
+        INCA    30
+        STA     DIGWD
+        OUT     DIGWD(19)
+        CMP1    =N=
+        JE      NXT
+        LDA     =48=
+        STA     DIGWD
+        OUT     DIGWD(19)
+NXT     INC1    1
+        CMP1    =N=
+        JLE     OUTLP
+        HLT
+
+        ORIG    400
+NEXT    CON     0
+        ORIG    430
+RANK    CON     0
+        ORIG    460
+HOLD    CON     0
+TEMP    CON     0
+DIGWD   CON     0
+
+        END     START
